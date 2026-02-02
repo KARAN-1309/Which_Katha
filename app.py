@@ -1,25 +1,21 @@
+import os
+import random
+import requests
 from flask import Flask, render_template, request, jsonify
-import pickle
-import pandas as pd
 
 app = Flask(__name__)
 
-# --- Load Models (Simulated for now) ---
-# In the real version, you will load your actual .pkl files here
-# movies = pickle.load(open('movies.pkl', 'rb'))
-# similarity = pickle.load(open('similarity.pkl', 'rb'))
+# TMDB Setup
+TMDB_API_KEY = os.environ.get('TMDB_API_KEY')
+BASE_URL = "https://api.themoviedb.org/3"
 
-def get_dummy_recommendation(mood, vibe):
-    # This simulates your AI logic
-    return {
-        "title": "Inception",
-        "overview": "A thief who steals corporate secrets through the use of dream-sharing technology...",
-        "poster": "https://image.tmdb.org/t/p/w500/9gk7admal4BN5046AOExkyXRJjn.jpg",
-        "match_score": "98%",
-        "badges": ["Sci-Fi", "Thriller"]
-    }
-
-# --- Routes ---
+# Logic: Map "Moods" to TMDB Genre IDs
+MOOD_MAP = {
+    "Happy": [35, 10751, 16],       # Comedy, Family, Animation
+    "Melancholic": [18, 10749],     # Drama, Romance
+    "Adventurous": [12, 28, 878],   # Adventure, Action, Sci-Fi
+    "Romantic": [10749, 35],        # Romance, Comedy
+}
 
 @app.route('/')
 def home():
@@ -27,16 +23,48 @@ def home():
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    # Receive data from the frontend
+    # 1. Get User Input
     data = request.json
-    mood = data.get('mood')
-    vibe = data.get('vibe')
+    mood = data.get('mood', 'Happy')
+    vibe = data.get('vibe', 'Moderate')
     
-    # Run the AI logic
-    result = get_dummy_recommendation(mood, vibe)
+    # 2. Convert Mood to Genres
+    genre_ids = MOOD_MAP.get(mood, [35]) # Default to Comedy if unknown
+    genre_string = ",".join(map(str, genre_ids))
     
-    # Send back JSON
-    return jsonify(result)
+    # 3. Build the TMDB Query
+    # We use 'discover/movie' to filter by genre and sort by popularity
+    url = f"{BASE_URL}/discover/movie"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_string,
+        "language": "en-US",
+        "sort_by": "popularity.desc",
+        "page": random.randint(1, 5) # Shuffle pages so it's not always the same movies
+    }
+
+    # 4. Fetch from TMDB
+    response = requests.get(url, params=params)
+    
+    if response.status_code == 200:
+        results = response.json().get('results', [])
+        if results:
+            # Pick a random movie from the top 20 results
+            movie = random.choice(results)
+            
+            # Get full poster URL
+            poster_path = movie.get('poster_path')
+            full_poster = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Poster"
+            
+            return jsonify({
+                "title": movie.get('title'),
+                "overview": movie.get('overview', 'No summary available.'),
+                "poster": full_poster,
+                "match_score": f"{random.randint(85, 99)}%", # Mock score for fun
+                "badges": [mood, vibe]
+            })
+            
+    return jsonify({"error": "No recommendation found."})
 
 if __name__ == '__main__':
     app.run(debug=True)
