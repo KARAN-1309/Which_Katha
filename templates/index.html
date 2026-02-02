@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Which_Katha? | Find Your Story</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="video-bg">
+        <video autoplay muted loop playsinline>
+            <source src="{{ url_for('static', filename='Katha_bg1.mp4') }}" type="video/mp4">
+        </video>
+        </div>
+
+    <aside class="sidebar">
+        <div class="logo-area">
+            <img src="{{ url_for('static', filename='WHICH KATHA.png') }}" alt="Which_Katha Logo">
+        </div>
+        
+        <nav class="nav-links">
+            <a href="#" class="active" onclick="showSection('home')">🏠 Home</a>
+            <a href="#" onclick="showSection('watchlist')">❤️ My Watchlist</a>
+            <a href="#" onclick="showSection('about')">📖 About Us</a>
+            <a href="#" onclick="showSection('contact')">📞 Contact</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>© 2026 Which_Katha</p>
+        </div>
+    </aside>
+
+    <main class="content">
+        
+        <section id="home-section" class="fade-in">
+            <header class="hero">
+                <h1>Which_Katha?</h1>
+                <p>Which story will you watch today?</p>
+            </header>
+
+            <div class="glass-card search-box">
+                <form id="recommend-form">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>🎭 Mood</label>
+                            <select id="mood"><option>Happy</option><option>Melancholic</option><option>Adventurous</option><option>Romantic</option></select>
+                        </div>
+                        <div class="input-group">
+                            <label>✨ Vibe</label>
+                            <select id="vibe"><option>Chill</option><option>Moderate</option><option>Mind-Bending</option></select>
+                        </div>
+                        <div class="input-group">
+                            <label>⏰ Time</label>
+                            <select id="time"><option>Morning</option><option>Evening</option><option>Late Night</option></select>
+                        </div>
+                        <div class="input-group">
+                            <label>👥 With</label>
+                            <select id="companion"><option>Solo</option><option>Friends</option><option>Date</option></select>
+                        </div>
+                    </div>
+                    <button type="submit" class="cta-btn">🎬 Find My Story</button>
+                </form>
+            </div>
+
+            <div id="result-area"></div>
+
+            <div id="browse-area">
+                <h3 class="row-title">🔥 Trending Katha</h3>
+                <div class="movie-row" id="trending-row"></div>
+
+                <h3 class="row-title">💎 Hidden Gems (Vibe Picks)</h3>
+                <div class="movie-row" id="gems-row"></div>
+            </div>
+        </section>
+
+        <section id="watchlist-section" class="hidden fade-in">
+            <header class="hero">
+                <h2>❤️ My Watchlist</h2>
+            </header>
+            <div class="glass-card">
+                <div class="movie-grid" id="watchlist-grid">
+                    <p style="text-align:center; width:100%; color:#888;">Your list is currently empty.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="about-section" class="hidden fade-in">
+            <div class="glass-card text-content">
+                <h2>The Story Behind Which_Katha?</h2>
+                <p>We believe that choosing a movie shouldn't take longer than watching one. <strong>Which_Katha?</strong> (meaning 'Which Story?') was born from the frustration of endless scrolling.</p>
+                <p>We built a smart, vibe-based engine that doesn't just look at genres—it understands the <em>feeling</em> of a film.</p>
+            </div>
+        </section>
+
+        <section id="contact-section" class="hidden fade-in">
+            <div class="glass-card text-content">
+                <h2>Let's Talk Cinema</h2>
+                <p>Have a feature request? Found a bug? We’d love to hear from you.</p>
+                <div class="contact-details">
+                    <p><strong>📞 Phone:</strong> 7365937446</p>
+                    <p><strong>📧 Email:</strong> karanjogi2021@gmail.com</p>
+                    <p><strong>💼 LinkedIn:</strong> <a href="https://www.linkedin.com/in/karan-jogi-4592b0285" target="_blank" style="color:#FFD700;">Connect Profile</a></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
