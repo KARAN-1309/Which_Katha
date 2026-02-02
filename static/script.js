@@ -1,4 +1,4 @@
-// --- DUMMY DATA ---
+// --- DUMMY DATA FOR ROWS (Still static for now) ---
 const trendingMovies = [
     { title: "Dune: Part Two", img: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg", rating: "8.5" },
     { title: "Oppenheimer", img: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg", rating: "8.1" },
@@ -30,16 +30,11 @@ function renderRow(containerId, movies) {
 
 // --- SECTION SWITCHING ---
 function showSection(sectionId) {
-    // 1. Hide all sections
     document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
-    
-    // 2. Show the selected section
     const target = document.getElementById(sectionId + '-section');
     if (target) target.classList.remove('hidden');
     
-    // 3. Update Sidebar Active State
     document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
-    // Find the link that called this function (using event.currentTarget if available)
     if (event && event.currentTarget) {
         event.currentTarget.classList.add('active');
     }
@@ -47,38 +42,66 @@ function showSection(sectionId) {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Which_Katha UI Loaded.");
     renderRow('trending-row', trendingMovies);
     renderRow('gems-row', hiddenGems);
 });
 
-// --- SEARCH FORM HANDLER ---
+// --- REAL API CALL HANDLER ---
 const form = document.getElementById('recommend-form');
 if (form) {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const btn = document.querySelector('.cta-btn');
+        const originalText = btn.innerHTML;
         btn.innerHTML = "✨ Scanning Vibes...";
+        btn.disabled = true;
         
-        // Mock API Latency
-        setTimeout(() => {
-            // Hide the browse area to focus on result
-            document.getElementById('browse-area').style.display = 'none';
-            
-            // Show Mock Result
-            const resultArea = document.getElementById('result-area');
-            resultArea.innerHTML = `
-                <div class="glass-card" style="border-left: 5px solid #FFD700; display:flex; flex-wrap:wrap; gap:20px; align-items:center;">
-                    <img src="https://image.tmdb.org/t/p/w500/9gk7admal4BN5046AOExkyXRJjn.jpg" style="width:150px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.5);">
-                    <div style="flex:1;">
-                        <h2 style="color:var(--gold); margin:0 0 10px 0;">Inception</h2>
-                        <p style="margin-bottom:15px;">A perfect match for your <strong>Mind-Bending</strong> vibe. This story explores dreams within dreams.</p>
-                        <button class="cta-btn" style="font-size:1rem; padding:0.5rem 1.5rem; width:auto;" onclick="alert('Playing Trailer...')">▶ Watch Trailer</button>
+        // 1. Collect Data
+        const mood = document.getElementById('mood').value;
+        const vibe = document.getElementById('vibe').value;
+
+        try {
+            // 2. Send to Python Backend
+            const response = await fetch('/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mood: mood, vibe: vibe })
+            });
+
+            const data = await response.json();
+
+            // 3. Update UI
+            if (data.error) {
+                alert("Error: " + data.error);
+            } else {
+                document.getElementById('browse-area').style.display = 'none';
+                
+                const resultArea = document.getElementById('result-area');
+                resultArea.innerHTML = `
+                    <div class="glass-card" style="border-left: 5px solid #FFD700; display:flex; flex-wrap:wrap; gap:20px; align-items:center; animation: fadeIn 0.5s;">
+                        <img src="${data.poster}" style="width:150px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.5);">
+                        <div style="flex:1;">
+                            <h2 style="color:var(--gold); margin:0 0 10px 0;">${data.title}</h2>
+                            <p style="margin-bottom:15px; line-height: 1.6;">${data.overview}</p>
+                            <div style="margin-bottom:15px;">
+                                <span style="background:rgba(255,215,0,0.2); color:var(--gold); padding:5px 10px; border-radius:15px; font-size:0.9rem;">Match: ${data.match_score}</span>
+                                <span style="background:rgba(255,255,255,0.1); color:white; padding:5px 10px; border-radius:15px; font-size:0.9rem; margin-left:10px;">${data.badges[0]}</span>
+                            </div>
+                            <button class="cta-btn" style="font-size:1rem; padding:0.5rem 1.5rem; width:auto;" onclick="window.open('https://www.youtube.com/results?search_query=${data.title}+trailer', '_blank')">▶ Watch Trailer</button>
+                        </div>
                     </div>
-                </div>
-            `;
-            
-            btn.innerHTML = "🎬 Find Another Story";
-        }, 1500);
+                    <div style="text-align:center; margin-top:20px;">
+                        <button onclick="location.reload()" style="background:transparent; border:1px solid #666; color:#888; padding:10px 20px; border-radius:20px; cursor:pointer;">Start Over</button>
+                    </div>
+                `;
+            }
+
+        } catch (error) {
+            console.error("API Error:", error);
+            alert("Something went wrong connecting to the server.");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     });
 }
