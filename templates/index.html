@@ -19,13 +19,17 @@
         <div class="logo-area">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Which_Katha Logo">
         </div>
+        
         <nav class="nav-links">
             <a href="#" class="active" onclick="showSection('home')">🏠 Home</a>
             <a href="#" onclick="showSection('watchlist')">❤️ Watchlist</a>
             <a href="#" onclick="showSection('history')">🕰️ History</a>
             <a href="#" onclick="showSection('about')">📖 About Us</a>
         </nav>
-        <div class="sidebar-footer"><p>© 2026 Which_Katha</p></div>
+
+        <div class="sidebar-footer">
+            <p>© 2026 Which_Katha</p>
+        </div>
     </aside>
 
     <main class="content">
@@ -38,10 +42,11 @@
 
             <div class="glass-card search-box">
                 <form id="recommend-form">
+                    
                     <div class="input-group" style="margin-bottom: 2rem;">
                         <label>✨ Describe your story (Optional)</label>
-                        <input type="text" id="custom-query" placeholder="e.g. 'Similar to Dark' or 'Bollywood Action Spy'" 
-                               style="width: 100%; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--gold); color: white; border-radius: 10px;">
+                        <input type="text" id="custom-query" placeholder="e.g. 'Similar to Dark', 'Bollywood Spy Thriller', or 'Shah Rukh Khan'" 
+                               style="width: 100%; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--gold); color: white; border-radius: 10px; font-family: 'Outfit';">
                     </div>
 
                     <div class="form-grid">
@@ -71,14 +76,16 @@
                                 <option value="K-Drama">K-Drama (Korea)</option>
                             </select>
                         </div>
+                        
                         <div class="input-group">
-                            <label>👥 Age</label>
+                            <label>👥 Age Group</label>
                             <select id="age">
                                 <option value="All">All Ages</option>
                                 <option value="Kids">Kids & Family</option>
                                 <option value="Adults">Adults (18+)</option>
                             </select>
                         </div>
+
                         <div class="input-group" style="grid-column: span 2;">
                             <label>📅 Released After: <span id="year-val" style="color:var(--gold);">2010</span></label>
                             <input type="range" id="year-slider" min="1980" max="2026" value="2010" class="slider">
@@ -92,8 +99,10 @@
             <div id="result-area"></div>
 
             <div id="browse-area">
-                <h3 class="row-title">🔥 Trending Now</h3>
-                <div class="movie-row" id="trending-row"></div>
+                <h3 class="row-title">🔥 Trending Movies & Shows (This Week)</h3>
+                <div class="movie-row" id="trending-row">
+                    <p style="padding: 20px; color: #888;">Connecting to TMDB to load trends...</p>
+                </div>
             </div>
         </section>
 
@@ -103,7 +112,7 @@
             </header>
             <div id="watchlist-grid" class="grid-container">
                 </div>
-            <p id="empty-watchlist" style="text-align:center; color:#888; margin-top:50px;">Your watchlist is empty.</p>
+            <p id="empty-watchlist" style="text-align:center; color:#888; margin-top:50px;">Your watchlist is currently empty.</p>
         </section>
 
         <section id="history-section" class="hidden fade-in">
@@ -125,12 +134,14 @@
                 </p>
                 <hr style="border-color: rgba(255,215,0,0.2); margin: 30px 0;">
                 <h3 style="color: var(--gold);">How It Works</h3>
-                <p>Unlike standard filters, our AI engine understands <em>context</em>. Whether you want something "Similar to Breaking Bad" or a "Bollywood Romantic Comedy from the 90s", we dig through thousands of titles to find your perfect match.</p>
+                <p style="color:#ccc;">
+                    Unlike standard filters, our Smart Engine understands context. Whether you want something "Similar to Breaking Bad" or a "Bollywood Romantic Comedy from the 90s", we dig through thousands of titles to find your perfect match using the massive TMDB database.
+                </p>
                 
-                <div style="margin-top: 40px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                <div style="margin-top: 40px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; color:#bbb;">
                     <p><strong>Developed by:</strong> Karan Jogi</p>
-                    <p><strong>Contact:</strong> karanjogi2021@gmail.com</p>
-                    <p><strong>Version:</strong> 2.0 (AI-Powered)</p>
+                    <p><strong>Data Source:</strong> The Movie Database (TMDB)</p>
+                    <p><strong>Version:</strong> 2.5 (Smart AI)</p>
                 </div>
             </div>
         </section>
