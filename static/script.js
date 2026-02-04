@@ -1,5 +1,5 @@
 // --- STATE VARIABLES ---
-let currentResults = []; // Stores the latest 3 movies fetched
+let currentResults = [];
 
 // --- CONFIGURATION ---
 const slider = document.getElementById('year-slider');
@@ -8,40 +8,63 @@ if(slider) {
     slider.oninput = function() { yearVal.innerHTML = this.value; }
 }
 
-// --- NAVIGATION ---
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    loadTrending();
+    renderHistory();
+});
+
+// --- FETCH TRENDING (NEW FEATURE) ---
+async function loadTrending() {
+    const container = document.getElementById('trending-row');
+    if(!container) return;
+
+    try {
+        const response = await fetch('/trending');
+        const data = await response.json();
+
+        if (data.length > 0) {
+            container.innerHTML = data.map(m => `
+                <div class="mini-card" onclick="window.open('https://www.google.com/search?q=${m.title} movie', '_blank')">
+                    <img src="${m.poster}" alt="${m.title}">
+                    <div class="mini-info">
+                        <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.title}</div>
+                        <span style="color:var(--gold); font-size:0.8rem;">⭐ ${m.rating}</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p style="color:#666; padding:20px;">Trending data unavailable.</p>';
+        }
+    } catch (error) {
+        console.error("Trending Error:", error);
+    }
+}
+
+// --- NAVIGATION & HISTORY (Keep existing logic) ---
 function showSection(sectionId) {
-    // Hide all sections
     document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
-    // Show target
     document.getElementById(sectionId + '-section').classList.remove('hidden');
-    
-    // Update Sidebar Active State
     document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
     if (event && event.currentTarget) event.currentTarget.classList.add('active');
-
-    // Refresh Data
     if (sectionId === 'watchlist') renderWatchlist();
     if (sectionId === 'history') renderHistory();
 }
 
-// --- LOCAL STORAGE HELPERS ---
 function getStorage(key) { return JSON.parse(localStorage.getItem(key)) || []; }
 function setStorage(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
-// --- WATCHLIST LOGIC ---
 function toggleWatchlist(index) {
     const movie = currentResults[index];
     let watchlist = getStorage('katha_watchlist');
-    
-    // Check if exists
     const existsIndex = watchlist.findIndex(m => m.title === movie.title);
     
     if (existsIndex > -1) {
-        watchlist.splice(existsIndex, 1); // Remove
-        alert(`❌ Removed "${movie.title}" from Watchlist`);
+        watchlist.splice(existsIndex, 1);
+        alert(`❌ Removed "${movie.title}"`);
     } else {
-        watchlist.unshift(movie); // Add
-        alert(`❤️ Added "${movie.title}" to Watchlist`);
+        watchlist.unshift(movie);
+        alert(`❤️ Added "${movie.title}"`);
     }
     setStorage('katha_watchlist', watchlist);
 }
@@ -50,18 +73,15 @@ function renderWatchlist() {
     const watchlist = getStorage('katha_watchlist');
     const container = document.getElementById('watchlist-grid');
     const emptyMsg = document.getElementById('empty-watchlist');
-
     if (watchlist.length === 0) {
         container.innerHTML = '';
         emptyMsg.style.display = 'block';
         return;
     }
-    
     emptyMsg.style.display = 'none';
-    container.innerHTML = watchlist.map(m => createCardHTML(m, false)).join('');
+    container.innerHTML = watchlist.map((m, i) => createCardHTML(m, false)).join('');
 }
 
-// --- HISTORY LOGIC ---
 function addToHistory(movie) {
     let history = getStorage('katha_history');
     if (!history.some(h => h.title === movie.title)) {
@@ -74,15 +94,13 @@ function addToHistory(movie) {
 function renderHistory() {
     const history = getStorage('katha_history');
     const container = document.getElementById('history-grid');
-    
     if (history.length === 0) {
-        container.innerHTML = '<p style="text-align:center; width:100%; color:#888;">No history yet.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#888;">No history yet.</p>';
         return;
     }
     container.innerHTML = history.map(m => createCardHTML(m, false)).join('');
 }
 
-// --- HTML GENERATORS ---
 function createCardHTML(movie, showAddButton = true, index = 0) {
     const btnHTML = showAddButton 
         ? `<button class="cta-btn" style="font-size:0.8rem; padding:0.5rem;" onclick="toggleWatchlist(${index})">❤️ Watchlist</button>`
@@ -136,15 +154,12 @@ if (form) {
             if (data.error) {
                 alert(data.error);
             } else {
-                currentResults = data.results; // Save for Watchlist logic
-                
-                // Add Top 1 to History automatically
+                currentResults = data.results;
                 if(currentResults.length > 0) addToHistory(currentResults[0]);
 
-                document.getElementById('browse-area').style.display = 'none';
+                document.getElementById('browse-area').style.display = 'none'; // Hide Trending on search
                 const resultArea = document.getElementById('result-area');
                 
-                // Render 3 Cards
                 const cardsHTML = currentResults.map((movie, index) => createCardHTML(movie, true, index)).join('');
                 
                 resultArea.innerHTML = `
