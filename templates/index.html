@@ -19,16 +19,13 @@
         <div class="logo-area">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Which_Katha Logo">
         </div>
-        
         <nav class="nav-links">
-            <a href="#" class="active" onclick="location.reload()">🏠 Home</a>
-            <a href="#" onclick="alert('Watchlist feature coming soon!')">❤️ Watchlist</a>
-            <a href="#" onclick="alert('History is saved locally on your device.')">🕰️ History</a>
+            <a href="#" class="active" onclick="showSection('home')">🏠 Home</a>
+            <a href="#" onclick="showSection('watchlist')">❤️ Watchlist</a>
+            <a href="#" onclick="showSection('history')">🕰️ History</a>
+            <a href="#" onclick="showSection('about')">📖 About Us</a>
         </nav>
-
-        <div class="sidebar-footer">
-            <p>© 2026 Which_Katha</p>
-        </div>
+        <div class="sidebar-footer"><p>© 2026 Which_Katha</p></div>
     </aside>
 
     <main class="content">
@@ -41,6 +38,12 @@
 
             <div class="glass-card search-box">
                 <form id="recommend-form">
+                    <div class="input-group" style="margin-bottom: 2rem;">
+                        <label>✨ Describe your story (Optional)</label>
+                        <input type="text" id="custom-query" placeholder="e.g. 'Similar to Dark' or 'Bollywood Action Spy'" 
+                               style="width: 100%; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--gold); color: white; border-radius: 10px;">
+                    </div>
+
                     <div class="form-grid">
                         <div class="input-group">
                             <label>🎭 Mood</label>
@@ -68,18 +71,16 @@
                                 <option value="K-Drama">K-Drama (Korea)</option>
                             </select>
                         </div>
-                        
                         <div class="input-group">
-                            <label>👥 Age Group</label>
+                            <label>👥 Age</label>
                             <select id="age">
                                 <option value="All">All Ages</option>
                                 <option value="Kids">Kids & Family</option>
                                 <option value="Adults">Adults (18+)</option>
                             </select>
                         </div>
-
                         <div class="input-group" style="grid-column: span 2;">
-                            <label>📅 Released After: <span id="year-val" style="color:#FFD700;">2010</span></label>
+                            <label>📅 Released After: <span id="year-val" style="color:var(--gold);">2010</span></label>
                             <input type="range" id="year-slider" min="1980" max="2026" value="2010" class="slider">
                         </div>
                     </div>
@@ -88,16 +89,49 @@
                 </form>
             </div>
 
-            <div id="recent-wrapper" class="hidden">
-                <h3 class="row-title">🕰️ Recently Found</h3>
-                <div class="movie-row" id="recent-row"></div>
-            </div>
-
             <div id="result-area"></div>
 
             <div id="browse-area">
                 <h3 class="row-title">🔥 Trending Now</h3>
                 <div class="movie-row" id="trending-row"></div>
+            </div>
+        </section>
+
+        <section id="watchlist-section" class="hidden fade-in">
+            <header class="hero">
+                <h2>❤️ My Watchlist</h2>
+            </header>
+            <div id="watchlist-grid" class="grid-container">
+                </div>
+            <p id="empty-watchlist" style="text-align:center; color:#888; margin-top:50px;">Your watchlist is empty.</p>
+        </section>
+
+        <section id="history-section" class="hidden fade-in">
+            <header class="hero">
+                <h2>🕰️ Search History</h2>
+            </header>
+            <div id="history-grid" class="grid-container">
+                </div>
+        </section>
+
+        <section id="about-section" class="hidden fade-in">
+            <div class="glass-card text-content" style="max-width: 800px; margin: 0 auto;">
+                <h2 style="color: var(--gold); font-family: 'Bebas Neue'; font-size: 3rem;">About Which_Katha?</h2>
+                <p style="font-size: 1.2rem; line-height: 1.6; color: #ddd;">
+                    Welcome to <strong>Which_Katha?</strong> (literally "Which Story?"). We know the struggle: you sit down with your dinner, scroll through Netflix for 45 minutes, and by the time you pick a movie, your food is cold.
+                </p>
+                <p style="font-size: 1.2rem; line-height: 1.6; color: #ddd; margin-top: 20px;">
+                    Our mission is simple: <strong>Stop Scrolling, Start Watching.</strong>
+                </p>
+                <hr style="border-color: rgba(255,215,0,0.2); margin: 30px 0;">
+                <h3 style="color: var(--gold);">How It Works</h3>
+                <p>Unlike standard filters, our AI engine understands <em>context</em>. Whether you want something "Similar to Breaking Bad" or a "Bollywood Romantic Comedy from the 90s", we dig through thousands of titles to find your perfect match.</p>
+                
+                <div style="margin-top: 40px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                    <p><strong>Developed by:</strong> Karan Jogi</p>
+                    <p><strong>Contact:</strong> karanjogi2021@gmail.com</p>
+                    <p><strong>Version:</strong> 2.0 (AI-Powered)</p>
+                </div>
             </div>
         </section>
 
