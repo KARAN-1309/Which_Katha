@@ -1,81 +1,123 @@
-// --- CONFIGURATION & ELEMENTS ---
+// --- STATE VARIABLES ---
+let currentResults = []; // Stores the latest 3 movies fetched
+
+// --- CONFIGURATION ---
 const slider = document.getElementById('year-slider');
 const yearVal = document.getElementById('year-val');
-
-// 1. Update Slider Text Real-time
-if(slider){
-    slider.oninput = function() {
-        yearVal.innerHTML = this.value;
-    }
+if(slider) {
+    slider.oninput = function() { yearVal.innerHTML = this.value; }
 }
 
-// 2. History Management (Saved in Browser Memory)
-function saveToHistory(movie) {
-    let history = JSON.parse(localStorage.getItem('katha_history')) || [];
-    // Prevent duplicates
+// --- NAVIGATION ---
+function showSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+    // Show target
+    document.getElementById(sectionId + '-section').classList.remove('hidden');
+    
+    // Update Sidebar Active State
+    document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+    // Refresh Data
+    if (sectionId === 'watchlist') renderWatchlist();
+    if (sectionId === 'history') renderHistory();
+}
+
+// --- LOCAL STORAGE HELPERS ---
+function getStorage(key) { return JSON.parse(localStorage.getItem(key)) || []; }
+function setStorage(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+// --- WATCHLIST LOGIC ---
+function toggleWatchlist(index) {
+    const movie = currentResults[index];
+    let watchlist = getStorage('katha_watchlist');
+    
+    // Check if exists
+    const existsIndex = watchlist.findIndex(m => m.title === movie.title);
+    
+    if (existsIndex > -1) {
+        watchlist.splice(existsIndex, 1); // Remove
+        alert(`❌ Removed "${movie.title}" from Watchlist`);
+    } else {
+        watchlist.unshift(movie); // Add
+        alert(`❤️ Added "${movie.title}" to Watchlist`);
+    }
+    setStorage('katha_watchlist', watchlist);
+}
+
+function renderWatchlist() {
+    const watchlist = getStorage('katha_watchlist');
+    const container = document.getElementById('watchlist-grid');
+    const emptyMsg = document.getElementById('empty-watchlist');
+
+    if (watchlist.length === 0) {
+        container.innerHTML = '';
+        emptyMsg.style.display = 'block';
+        return;
+    }
+    
+    emptyMsg.style.display = 'none';
+    container.innerHTML = watchlist.map(m => createCardHTML(m, false)).join('');
+}
+
+// --- HISTORY LOGIC ---
+function addToHistory(movie) {
+    let history = getStorage('katha_history');
     if (!history.some(h => h.title === movie.title)) {
-        history.unshift(movie); // Add to front
-        if (history.length > 10) history.pop(); // Keep only last 10
-        localStorage.setItem('katha_history', JSON.stringify(history));
-        renderHistory();
+        history.unshift(movie);
+        if (history.length > 20) history.pop();
+        setStorage('katha_history', history);
     }
 }
 
 function renderHistory() {
-    const history = JSON.parse(localStorage.getItem('katha_history')) || [];
-    const container = document.getElementById('recent-row');
-    const wrapper = document.getElementById('recent-wrapper');
+    const history = getStorage('katha_history');
+    const container = document.getElementById('history-grid');
     
-    if (history.length > 0 && container) {
-        wrapper.classList.remove('hidden');
-        container.innerHTML = history.map(m => `
-            <div class="mini-card" onclick="alert('${m.title}')">
-                <img src="${m.poster}" alt="${m.title}">
-                <div class="mini-info">
-                    <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.title}</div>
-                </div>
-            </div>
-        `).join('');
+    if (history.length === 0) {
+        container.innerHTML = '<p style="text-align:center; width:100%; color:#888;">No history yet.</p>';
+        return;
     }
+    container.innerHTML = history.map(m => createCardHTML(m, false)).join('');
 }
 
-// 3. Static Trending Data (Placeholders until dynamic)
-const trendingMovies = [
-    { title: "Dune: Part Two", img: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg" },
-    { title: "Pushpa 2", img: "https://image.tmdb.org/t/p/w500/r1yAzxX8fS784J839LE76518.jpg" }, 
-    { title: "Solo Leveling", img: "https://image.tmdb.org/t/p/w500/z6okM9a5oF5Q2tA1kG4w5.jpg" },
-    { title: "Oppenheimer", img: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg" }
-];
+// --- HTML GENERATORS ---
+function createCardHTML(movie, showAddButton = true, index = 0) {
+    const btnHTML = showAddButton 
+        ? `<button class="cta-btn" style="font-size:0.8rem; padding:0.5rem;" onclick="toggleWatchlist(${index})">❤️ Watchlist</button>`
+        : `<button class="cta-btn" style="font-size:0.8rem; padding:0.5rem; background:#333;" onclick="window.open('https://www.google.com/search?q=${movie.title}', '_blank')">🔍 Google It</button>`;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Render Trending
-    const tContainer = document.getElementById('trending-row');
-    if(tContainer) {
-        tContainer.innerHTML = trendingMovies.map(m => `
-            <div class="mini-card">
-                <img src="${m.img}">
-                <div class="mini-info">
-                    <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.title}</div>
+    return `
+        <div class="glass-card" style="margin:0; animation: fadeIn 0.5s;">
+            <div style="display:flex; gap:15px; align-items:flex-start;">
+                <img src="${movie.poster}" style="width:100px; height:150px; object-fit:cover; border-radius:10px;">
+                <div style="flex:1;">
+                    <h3 style="color:var(--gold); margin:0 0 5px 0; font-family:'Bebas Neue'; font-size:1.4rem;">${movie.title}</h3>
+                    <p style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">${movie.year} • ⭐ ${movie.rating}</p>
+                    <p style="font-size:0.85rem; line-height:1.4; color:#ddd; margin-bottom:15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${movie.overview}</p>
+                    <div style="display:flex; gap:10px;">
+                        <button class="cta-btn" style="font-size:0.8rem; padding:0.5rem;" onclick="window.open('https://www.youtube.com/results?search_query=${movie.title}+trailer', '_blank')">▶ Trailer</button>
+                        ${btnHTML}
+                    </div>
                 </div>
             </div>
-        `).join('');
-    }
-    // Render History
-    renderHistory();
-});
+        </div>
+    `;
+}
 
-// 4. Handle Search Form
+// --- SEARCH HANDLER ---
 const form = document.getElementById('recommend-form');
 if (form) {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const btn = document.querySelector('.cta-btn');
+        const btn = document.querySelector('button[type="submit"]');
         const originalText = btn.innerHTML;
-        btn.innerHTML = "🔍 Searching...";
+        btn.innerHTML = "🔍 Scanning...";
         btn.disabled = true;
 
-        // Collect all filter inputs
         const payload = {
+            query: document.getElementById('custom-query').value,
             mood: document.getElementById('mood').value,
             type: document.getElementById('type').value,
             region: document.getElementById('region').value,
@@ -94,40 +136,28 @@ if (form) {
             if (data.error) {
                 alert(data.error);
             } else {
-                // Save successful result to history
-                saveToHistory(data);
+                currentResults = data.results; // Save for Watchlist logic
+                
+                // Add Top 1 to History automatically
+                if(currentResults.length > 0) addToHistory(currentResults[0]);
 
-                // Show Result
                 document.getElementById('browse-area').style.display = 'none';
                 const resultArea = document.getElementById('result-area');
                 
+                // Render 3 Cards
+                const cardsHTML = currentResults.map((movie, index) => createCardHTML(movie, true, index)).join('');
+                
                 resultArea.innerHTML = `
-                    <div class="glass-card" style="border-left: 5px solid #FFD700; display:flex; flex-wrap:wrap; gap:20px; animation: fadeIn 0.5s;">
-                        <img src="${data.poster}" style="width:200px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-                        <div style="flex:1;">
-                            <h2 style="color:var(--gold); margin:0 0 5px 0; font-size:2.5rem; font-family:'Bebas Neue';">${data.title}</h2>
-                            <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">
-                                Year: ${data.year} • Rating: ⭐ ${data.rating} • Match: ${data.match_score}
-                            </p>
-                            <p style="margin-bottom:20px; line-height:1.6; color:#eee;">${data.overview}</p>
-                            
-                            <div style="display:flex; gap:10px;">
-                                <button class="cta-btn" style="width:auto; font-size:1rem; padding:0.8rem 2rem;" 
-                                    onclick="window.open('https://www.youtube.com/results?search_query=${data.title}+trailer', '_blank')">
-                                    ▶ Watch Trailer
-                                </button>
-                                <button onclick="location.reload()" 
-                                    style="background:transparent; border:1px solid #666; color:#bbb; padding:0 20px; border-radius:30px; cursor:pointer;">
-                                    Start Over
-                                </button>
-                            </div>
-                        </div>
+                    <h2 class="row-title" style="margin-bottom:20px;">🎉 Top Matches For You</h2>
+                    <div class="grid-container">${cardsHTML}</div>
+                    <div style="text-align:center; margin-top:30px;">
+                        <button onclick="location.reload()" style="background:transparent; border:1px solid #666; color:#bbb; padding:10px 30px; border-radius:30px; cursor:pointer;">Search Again</button>
                     </div>
                 `;
             }
         } catch (error) {
             console.error(error);
-            alert("Connection Failed. Please try again.");
+            alert("Connection Failed.");
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
